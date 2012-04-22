@@ -559,7 +559,11 @@ ExifTag::ExifTag(const std::string& key,
     // which we’d rather keep the 'Comment' type instead of 'Undefined'.
     if ((_data != 0) && (_type != "Comment"))
     {
-        _type = _datum->typeName();
+        const char* typeName = _datum->typeName();
+        if (typeName != 0)
+        {
+            _type = typeName;
+        }
     }
     _name = exifKey.tagName();
     _label = exifKey.tagLabel();
@@ -578,7 +582,11 @@ ExifTag::ExifTag(const std::string& key,
     // which we’d rather keep the 'Comment' type instead of 'Undefined'.
     if ((_data != 0) && (_type != "Comment"))
     {
-        _type = _datum->typeName();
+        const char* typeName = _datum->typeName();
+        if (typeName != 0)
+        {
+            _type = typeName;
+        }
     }
     _name = Exiv2::ExifTags::tagName(tag, ifd);
     _label = Exiv2::ExifTags::tagLabel(tag, ifd);
