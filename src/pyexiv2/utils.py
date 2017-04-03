@@ -224,7 +224,7 @@ class Rational(object):
         if match is None:
             raise ValueError('Invalid format for a rational: %s' % string)
         gd = match.groupdict()
-        return (long(gd['numerator']), long(gd['denominator']))
+        return (int(gd['numerator']), int(gd['denominator']))
 
     @staticmethod
     def from_string(string):

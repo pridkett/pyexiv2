@@ -90,7 +90,7 @@ class XmpTag(object):
     # strptime is not flexible enough to handle all valid Date formats, we use a
     # custom regular expression
     _time_zone_re = r'Z|((?P<sign>\+|-)(?P<ohours>\d{2}):(?P<ominutes>\d{2}))'
-    _time_re = r'(?P<hours>\d{2})(:(?P<minutes>\d{2})(:(?P<seconds>\d{2})(.(?P<decimal>\d+))?)?(?P<tzd>%s))?' % _time_zone_re
+    _time_re = r'(?P<hours>\d{2})(:(?P<minutes>\d{2})(:(?P<seconds>\d{2})(.(?P<decimal>\d+))?)?(?P<tzd>%s)?)' % _time_zone_re
     _date_re = re.compile(r'(?P<year>\d{4})(-(?P<month>\d{2})(-(?P<day>\d{2})(T(?P<time>%s))?)?)?' % _time_re)
 
     def __init__(self, key, value=None, _tag=None):
@@ -191,9 +191,9 @@ class XmpTag(object):
             self._value = map(lambda x: self._convert_to_python(x, type), self._raw_value)
         elif self.type == 'Lang Alt':
             self._value = {}
-            for k, v in self._raw_value.iteritems():
+            for k, v in self._raw_value.items():
                 try:
-                    self._value[unicode(k, 'utf-8')] = unicode(v, 'utf-8')
+                    self._value[str(k)] = str(v)
                 except TypeError:
                     raise XmpValueError(self._raw_value, type)
         elif self.type.lower().startswith('closed choice of'):
@@ -299,7 +299,7 @@ class XmpTag(object):
                     microseconds = int(float('0.%s' % gd['decimal']) * 1E6)
                 else:
                     microseconds = 0
-                if gd['tzd'] == 'Z':
+                if gd['tzd'] is None or gd['tzd'] == 'Z':
                     tzinfo = FixedOffset()
                 else:
                     tzinfo = FixedOffset(gd['sign'], int(gd['ohours']),
@@ -356,7 +356,7 @@ class XmpTag(object):
 
         elif type in ('AgentName', 'ProperName', 'Text'):
             try:
-                return unicode(value, 'utf-8')
+                return str(value)
             except TypeError:
                 raise XmpValueError(value, type)
 

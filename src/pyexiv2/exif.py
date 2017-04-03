@@ -312,7 +312,7 @@ class ExifTag(ListenerInterface):
 
         elif self.type in ('Long', 'SLong'):
             try:
-                return long(value)
+                return int(value)
             except ValueError:
                 raise ExifValueError(value, self.type)
 
