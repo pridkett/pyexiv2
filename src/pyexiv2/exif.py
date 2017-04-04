@@ -355,11 +355,6 @@ class ExifTag(ListenerInterface):
                     return DateTimeFormatter.exif(value)
                 else:
                     return '%s 00:00:00' % DateTimeFormatter.exif(value)
-            elif isinstance(value, unicode):
-                try:
-                    return value.encode('utf-8')
-                except UnicodeEncodeError:
-                    raise ExifValueError(value, self.type)
             elif isinstance(value, str):
                 return value
             else:

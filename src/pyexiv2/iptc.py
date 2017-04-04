@@ -205,7 +205,7 @@ class IptcTag(ListenerInterface):
     def _set_values(self, values):
         if not isinstance(values, (list, tuple)):
             raise TypeError('Expecting a list of values')
-        self.raw_value = map(self._convert_to_string, values)
+        self.raw_value = [self._convert_to_string(x) for x in values]
 
         if isinstance(self._values, NotifyingList):
             self._values.unregister_listener(self)
@@ -324,12 +324,7 @@ class IptcTag(ListenerInterface):
                 raise IptcValueError(value, self.type)
 
         elif self.type == 'String':
-            if isinstance(value, unicode):
-                try:
-                    return value.encode('utf-8')
-                except UnicodeEncodeError:
-                    raise IptcValueError(value, self.type)
-            elif isinstance(value, str):
+            if isinstance(value, str):
                 return value
             else:
                 raise IptcValueError(value, self.type)

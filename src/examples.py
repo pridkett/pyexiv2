@@ -8,17 +8,20 @@ from datetime import datetime, date
 
 
 def print_key_value(metadata, key):
-    print key, '=', metadata[key]
+    print(key, '=', metadata[key])
 
 
 if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print('usage: examples.py FILENAME')
+        sys.exit(1)
     # Read an image file's metadata
     image_file = sys.argv[1]
     metadata = ImageMetadata(image_file)
     metadata.read()
 
     # Print a list of all the keys of the EXIF tags in the image
-    print 'EXIF keys:', metadata.exif_keys
+    print('EXIF keys:', metadata.exif_keys)
 
     try:
         # Print the value of the Exif.Image.DateTime tag
@@ -29,7 +32,7 @@ if __name__ == '__main__':
         metadata[key] = datetime.now()
         print_key_value(metadata, key)
     except KeyError:
-        print '[not set]'
+        print('[not set]')
 
     # Add a new tag
     key = 'Exif.Image.Orientation'
@@ -37,7 +40,7 @@ if __name__ == '__main__':
     print_key_value(metadata, key)
 
     # Print a list of all the keys of the IPTC tags in the image
-    print os.linesep, 'IPTC keys:', metadata.iptc_keys
+    print(os.linesep, 'IPTC keys:', metadata.iptc_keys)
 
     try:
         # Print the value of the Iptc.Application2.DateCreated tag
@@ -48,7 +51,7 @@ if __name__ == '__main__':
         metadata[key] = [date.today()]
         print_key_value(metadata, key)
     except KeyError:
-        print '[not set]'
+        print('[not set]')
 
     # Add a new tag
     key = 'Iptc.Application2.Keywords'
@@ -57,7 +60,7 @@ if __name__ == '__main__':
     print_key_value(metadata, key)
 
     # Print a list of all the keys of the XMP tags in the image
-    print os.linesep, 'XMP keys:', metadata.xmp_keys
+    print(os.linesep, 'XMP keys:', metadata.xmp_keys)
 
     try:
         # Print the value of the Xmp.dc.subject tag
@@ -68,7 +71,7 @@ if __name__ == '__main__':
         metadata[key] = keywords
         print_key_value(metadata, key)
     except KeyError:
-        print '[not set]'
+        print('[not set]')
 
     # Add a new tag
     key = 'Xmp.dc.title'
