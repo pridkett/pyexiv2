@@ -90,7 +90,7 @@ class XmpTag(object):
     # strptime is not flexible enough to handle all valid Date formats, we use a
     # custom regular expression
     _time_zone_re = r'Z|((?P<sign>\+|-)(?P<ohours>\d{2}):(?P<ominutes>\d{2}))'
-    _time_re = r'(?P<hours>\d{2})(:(?P<minutes>\d{2})(:(?P<seconds>\d{2})(.(?P<decimal>\d+))?)?(?P<tzd>%s))?' % _time_zone_re
+    _time_re = r'(?P<hours>\d{2})(:(?P<minutes>\d{2})(:(?P<seconds>\d{2})(.(?P<decimal>\d+))?)?(?P<tzd>%s)?)' % _time_zone_re
     _date_re = re.compile(r'(?P<year>\d{4})(-(?P<month>\d{2})(-(?P<day>\d{2})(T(?P<time>%s))?)?)?' % _time_re)
 
     def __init__(self, key, value=None, _tag=None):
@@ -173,6 +173,7 @@ class XmpTag(object):
         elif type == 'LangAlt':
             if not value:
                 raise ValueError('Empty LangAlt')
+            # FIXME: this change from bytes to string should be done earlier in the process
             self._tag._setLangAltValue(value)
 
         self._raw_value = value
@@ -188,12 +189,12 @@ class XmpTag(object):
             type = self.type[4:]
             if type.lower().startswith('closed choice of'):
                 type = type[17:]
-            self._value = map(lambda x: self._convert_to_python(x, type), self._raw_value)
+            self._value = [self._convert_to_python(x, type) for x in self._raw_value]
         elif self.type == 'Lang Alt':
             self._value = {}
-            for k, v in self._raw_value.iteritems():
+            for k, v in self._raw_value.items():
                 try:
-                    self._value[unicode(k, 'utf-8')] = unicode(v, 'utf-8')
+                    self._value[str(k)] = str(v)
                 except TypeError:
                     raise XmpValueError(self._raw_value, type)
         elif self.type.lower().startswith('closed choice of'):
@@ -223,16 +224,16 @@ class XmpTag(object):
             stype = self.type[4:]
             if stype.lower().startswith('closed choice of'):
                 stype = stype[17:]
-            self.raw_value = map(lambda x: self._convert_to_string(x, stype), value)
+            self.raw_value = [self._convert_to_string(x, stype) for x in value]
         elif type == 'LangAlt':
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 value = {'x-default': value}
-            if not isinstance(value, dict):
+            elif not isinstance(value, dict):
                 raise TypeError('Expecting a dictionary mapping language codes to values')
             raw_value = {}
-            for k, v in value.iteritems():
+            for k, v in value.items():
                 try:
-                    raw_value[k.encode('utf-8')] = v.encode('utf-8')
+                    raw_value[k] = v
                 except TypeError:
                     raise XmpValueError(value, type)
             self.raw_value = raw_value
@@ -299,7 +300,7 @@ class XmpTag(object):
                     microseconds = int(float('0.%s' % gd['decimal']) * 1E6)
                 else:
                     microseconds = 0
-                if gd['tzd'] == 'Z':
+                if gd['tzd'] is None or gd['tzd'] == 'Z':
                     tzinfo = FixedOffset()
                 else:
                     tzinfo = FixedOffset(gd['sign'], int(gd['ohours']),
@@ -356,7 +357,7 @@ class XmpTag(object):
 
         elif type in ('AgentName', 'ProperName', 'Text'):
             try:
-                return unicode(value, 'utf-8')
+                return str(value)
             except TypeError:
                 raise XmpValueError(value, type)
 
@@ -406,7 +407,7 @@ class XmpTag(object):
                 raise XmpValueError(value, type)
 
         elif type == 'Integer':
-            if isinstance(value, (int, long)):
+            if isinstance(value, int):
                 return str(value)
             else:
                 raise XmpValueError(value, type)
@@ -418,12 +419,7 @@ class XmpTag(object):
                 raise XmpValueError(value, type)
 
         elif type in ('AgentName', 'ProperName', 'Text', 'URI', 'URL'):
-            if isinstance(value, unicode):
-                try:
-                    return value.encode('utf-8')
-                except UnicodeEncodeError:
-                    raise XmpValueError(value, type)
-            elif isinstance(value, str):
+            if isinstance(value, str):
                 return value
             else:
                 raise XmpValueError(value, type)
@@ -436,12 +432,7 @@ class XmpTag(object):
 
         elif type == '':
             # Unknown type, assume string
-            if isinstance(value, unicode):
-                try:
-                    return value.encode('utf-8')
-                except UnicodeEncodeError:
-                    raise XmpValueError(value, type)
-            elif isinstance(value, str):
+            if isinstance(value, str):
                 return value
             else:
                 raise XmpValueError(value, type)
@@ -457,7 +448,7 @@ class XmpTag(object):
         if self._raw_value is None:
             right = '(No value)'
         else:
-             right = self._raw_value
+            right = self._raw_value
         return '<%s = %s>' % (left, right)
 
     # Support for pickling.

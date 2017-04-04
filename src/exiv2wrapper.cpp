@@ -1,6 +1,6 @@
 // *****************************************************************************
 /*
- * Copyright (C) 2006-2012 Olivier Tilloy <olivier@tilloy.net>
+ * Copyright (C) 2006-2011 Olivier Tilloy <olivier@tilloy.net>
  *
  * This file is part of the pyexiv2 distribution.
  *
@@ -559,11 +559,7 @@ ExifTag::ExifTag(const std::string& key,
     // which we’d rather keep the 'Comment' type instead of 'Undefined'.
     if ((_data != 0) && (_type != "Comment"))
     {
-        const char* typeName = _datum->typeName();
-        if (typeName != 0)
-        {
-            _type = typeName;
-        }
+        _type = _datum->typeName();
     }
     _name = exifKey.tagName();
     _label = exifKey.tagLabel();
@@ -582,11 +578,7 @@ ExifTag::ExifTag(const std::string& key,
     // which we’d rather keep the 'Comment' type instead of 'Undefined'.
     if ((_data != 0) && (_type != "Comment"))
     {
-        const char* typeName = _datum->typeName();
-        if (typeName != 0)
-        {
-            _type = typeName;
-        }
+        _type = _datum->typeName();
     }
     _name = Exiv2::ExifTags::tagName(tag, ifd);
     _label = Exiv2::ExifTags::tagLabel(tag, ifd);
@@ -624,10 +616,10 @@ void ExifTag::setParentImage(Image& image)
         return;
     }
     _data = data;
-    Exiv2::Value::AutoPtr value = _datum->getValue();
+    std::string value = _datum->toString();
     delete _datum;
     _datum = &(*_data)[_key.key()];
-    _datum->setValue(value.get());
+    _datum->setValue(value);
 
     _byteOrder = image.getByteOrder();
 }
@@ -963,11 +955,42 @@ void XmpTag::setParentImage(Image& image)
         // anything (see https://bugs.launchpad.net/pyexiv2/+bug/622739).
         return;
     }
-    Exiv2::Value::AutoPtr value = _datum->getValue();
-    delete _datum;
-    _from_datum = true;
-    _datum = &(*image.getXmpData())[_key.key()];
-    _datum->setValue(value.get());
+    switch (Exiv2::XmpProperties::propertyType(_key))
+    {
+        case Exiv2::xmpText:
+        {
+            const std::string value = getTextValue();
+            delete _datum;
+            _from_datum = true;
+            _datum = &(*image.getXmpData())[_key.key()];
+            setTextValue(value);
+            break;
+        }
+        case Exiv2::xmpAlt:
+        case Exiv2::xmpBag:
+        case Exiv2::xmpSeq:
+        {
+            const boost::python::list value = getArrayValue();
+            delete _datum;
+            _from_datum = true;
+            _datum = &(*image.getXmpData())[_key.key()];
+            setArrayValue(value);
+            break;
+        }
+        case Exiv2::langAlt:
+        {
+            const boost::python::dict value = getLangAltValue();
+            delete _datum;
+            _from_datum = true;
+            _datum = &(*image.getXmpData())[_key.key()];
+            setLangAltValue(value);
+            break;
+        }
+        default:
+            // Should not happen, this case is here for the sake
+            // of completeness and to avoid compiler warnings.
+            assert(0);
+    }
 }
 
 const std::string XmpTag::getKey()

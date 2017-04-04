@@ -1,6 +1,6 @@
 // *****************************************************************************
 /*
- * Copyright (C) 2006-2012 Olivier Tilloy <olivier@tilloy.net>
+ * Copyright (C) 2006-2010 Olivier Tilloy <olivier@tilloy.net>
  *
  * This file is part of the pyexiv2 distribution.
  *
@@ -34,12 +34,14 @@ using namespace boost::python;
 
 using namespace exiv2wrapper;
 
+boost::python::tuple exiv2_version = \
+    boost::python::make_tuple(EXIV2_MAJOR_VERSION,
+                              EXIV2_MINOR_VERSION,
+                              EXIV2_PATCH_VERSION);
+
 BOOST_PYTHON_MODULE(libexiv2python)
 {
-    scope().attr("exiv2_version_info") = \
-        boost::python::make_tuple(EXIV2_MAJOR_VERSION,
-                                  EXIV2_MINOR_VERSION,
-                                  EXIV2_PATCH_VERSION);
+    scope().attr("exiv2_version_info") = exiv2_version;
 
     register_exception_translator<Exiv2::Error>(&translateExiv2Error);
 

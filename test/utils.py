@@ -2,7 +2,7 @@
 
 # ******************************************************************************
 #
-# Copyright (C) 2010-2012 Olivier Tilloy <olivier@tilloy.net>
+# Copyright (C) 2010 Olivier Tilloy <olivier@tilloy.net>
 #
 # This file is part of the pyexiv2 distribution.
 #
@@ -36,7 +36,7 @@ class TestConversions(unittest.TestCase):
     def test_undefined_to_string(self):
         self.assertEqual(undefined_to_string("48 50 50 49"), "0221")
         self.assertEqual(undefined_to_string("48 50 50 49 "), "0221")
-        self.assertEqual(undefined_to_string(""), "")
+        self.assertRaises(ValueError, undefined_to_string, "")
         self.assertRaises(ValueError, undefined_to_string, "foo")
         self.assertRaises(ValueError, undefined_to_string, "48 50  50 49")
 
