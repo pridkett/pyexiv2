@@ -174,7 +174,7 @@ class XmpTag(object):
             if not value:
                 raise ValueError('Empty LangAlt')
             # FIXME: this change from bytes to string should be done earlier in the process
-            self._tag._setLangAltValue({str(k): str(v) for k, v in value.items()})
+            self._tag._setLangAltValue(value)
 
         self._raw_value = value
         self._value_cookie = True
@@ -228,12 +228,12 @@ class XmpTag(object):
         elif type == 'LangAlt':
             if isinstance(value, str):
                 value = {'x-default': value}
-            if not isinstance(value, dict):
+            elif not isinstance(value, dict):
                 raise TypeError('Expecting a dictionary mapping language codes to values')
             raw_value = {}
             for k, v in value.items():
                 try:
-                    raw_value[k.encode('utf-8')] = v.encode('utf-8')
+                    raw_value[k] = v
                 except TypeError:
                     raise XmpValueError(value, type)
             self.raw_value = raw_value
